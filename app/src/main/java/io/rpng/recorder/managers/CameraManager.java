@@ -231,12 +231,12 @@ public class CameraManager {
             mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             mPreviewBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_AUTO);
             mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
-            mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF);
+            mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
 
             // Get the focal length
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-            String focus = sharedPreferences.getString("prefFocusLength", "5.0");
-            mPreviewBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, Float.parseFloat(focus));
+            //String focus = sharedPreferences.getString("prefFocusLength", "5.0");
+            //mPreviewBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, Float.parseFloat(focus));
 
 
             // Create the surface we want to render to (this preview surface is required)
