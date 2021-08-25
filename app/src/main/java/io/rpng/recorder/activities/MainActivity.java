@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 // If we are not recording we should start it
                 if(!is_recording) {
                     // Set our folder name
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss");
                     folder_name = dateFormat.format(new Date());
 
                     // Also change the text on the button so that it turns into the stop button
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                     BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
 
                     // Master string of information
-                    String data = timestamp + ",images/" + timestamp + ".jpeg";
+                    String data = timestamp + ",cam0/" + timestamp + ".jpeg";
 
                     // Appends the string to the file and closes
                     writer.write(data + "\n");
@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
                 // Create folder name
                 filename = timestamp + ".jpeg";
                 path = Environment.getExternalStorageDirectory().getAbsolutePath()
-                        + "/dataset_recorder/" + MainActivity.folder_name + "/images/";
+                        + "/dataset_recorder/" + MainActivity.folder_name + "/cam0/";
 
                 // Create export file
                 new File(path).mkdirs();
