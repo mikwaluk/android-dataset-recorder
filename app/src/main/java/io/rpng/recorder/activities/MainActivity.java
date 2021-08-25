@@ -1,5 +1,6 @@
 package io.rpng.recorder.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -12,6 +13,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     // Variables for the current state
     public static boolean is_recording;
     public static String folder_name;
+    private PowerManager.WakeLock mWakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Add our listeners
         this.addButtonListeners();
+
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "WakeLock:");
+        this.mWakeLock.acquire();
 
         // Get our surfaces
         camera2View = (ImageView) findViewById(R.id.camera2_preview);
@@ -288,6 +295,11 @@ public class MainActivity extends AppCompatActivity {
             image.close();
         }
     };
+    @Override
+    public void onDestroy() {
+        this.mWakeLock.release();
+        super.onDestroy();
+    }
 
 
     @Override
