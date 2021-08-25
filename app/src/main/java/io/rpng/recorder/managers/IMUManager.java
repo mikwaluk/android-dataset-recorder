@@ -39,6 +39,7 @@ public class IMUManager implements SensorEventListener {
     long angular_time;
     int angular_acc;
     float[] angular_data;
+    private final String mFirstLine = "timestamp,ax,ay,az,gx,gy,gz";
 
     public IMUManager(Activity activity) {
         // Set activity
@@ -66,11 +67,15 @@ public class IMUManager implements SensorEventListener {
 
         // Set event timestamp to current time in milliseconds
         // http://stackoverflow.com/a/9333605
-        event.timestamp = (new Date()).getTime() + (event.timestamp - System.nanoTime()) / 1000000L;
+        //event.timestamp = (new Date()).getTime() + (event.timestamp - System.nanoTime()) / 1000000L;
 
         // TODO: Figure out better way, for now just use the total time
         // https://code.google.com/p/android/issues/detail?id=56561
-        event.timestamp = new Date().getTime();
+        //event.timestamp = new Date().getTime();
+        if (MainActivity.starting_offset == -1) {
+            throw new RuntimeException("Starting Offset has not been initialized!");
+        }
+        event.timestamp = (event.timestamp + MainActivity.starting_offset) / 1000000L;
 
         // Handle accelerometer reading
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -100,8 +105,13 @@ public class IMUManager implements SensorEventListener {
 
                 try {
                     // If the file does not exist yet, create it
-                    if(!dest.exists())
+                    if(!dest.exists()) {
                         dest.createNewFile();
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
+                        writer.write(mFirstLine + "\n");
+                        writer.flush();
+                        writer.close();
+                    }
 
                     // The true will append the new data
                     BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));

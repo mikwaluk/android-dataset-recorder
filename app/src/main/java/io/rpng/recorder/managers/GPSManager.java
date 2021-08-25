@@ -56,6 +56,8 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
+    private boolean mWriteFirstLine = true;
+    private final String mFirstLine = "timestamp,latitude,longitude,altitude,accuracy,bearing,speed,provider";
     public GPSManager(Activity activity) {
         // Set activity
         this.activity = activity;
@@ -99,12 +101,16 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
 
             try {
                 // If the file does not exist yet, create it
-                if (!dest.exists())
+                if (!dest.exists()) {
                     dest.createNewFile();
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
+                    writer.write(mFirstLine + "\n");
+                    writer.flush();
+                    writer.close();
+                }
 
                 // The true will append the new data
                 BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
-
                 // Master string of information
                 // TODO: See if we can use location.getTime()
                 String data = new Date().getTime() + "," + lat + "," + lon + "," + altitude + "," + accuracy
@@ -222,6 +228,7 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         mBackgroundThread = new HandlerThread("GPSBackground");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        mWriteFirstLine = true;
     }
 
     /**

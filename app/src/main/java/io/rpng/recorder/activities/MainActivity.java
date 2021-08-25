@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     // Variables for the current state
     public static boolean is_recording;
     public static String folder_name;
+    public static long starting_offset = -1;
     private PowerManager.WakeLock mWakeLock;
 
     @Override
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
         // Set the state so that we are not recording
         folder_name = "";
         is_recording = false;
+
+        starting_offset = System.currentTimeMillis() * 1000000L  - android.os.SystemClock.elapsedRealtimeNanos();
 
         // Lets by default launch into the settings view
         startActivityForResult(intentSettings, RESULT_SETTINGS);
@@ -239,7 +242,10 @@ public class MainActivity extends AppCompatActivity {
 
                 // Current timestamp of the event
                 // TODO: See if we can use image.getTimestamp()
-                long timestamp = new Date().getTime();
+                if (MainActivity.starting_offset == -1) {
+                    throw new RuntimeException("Starting Offset has not been initialized!");
+                }
+                long timestamp = (image.getTimestamp() + MainActivity.starting_offset) / 1000000L;
 
                 // Create folder name
                 String filename = "data_image.txt";
