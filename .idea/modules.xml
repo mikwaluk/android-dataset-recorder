@@ -3,9 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Android.android-dataset-recorder.iml" filepath="$PROJECT_DIR$/.idea/modules/Android.android-dataset-recorder.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-dataset-recorder.iml" filepath="$PROJECT_DIR$/android-dataset-recorder.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android-dataset-recorder.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android-dataset-recorder.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
