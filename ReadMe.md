@@ -6,7 +6,7 @@ To open this project, just load up android studio, and go `File > Open...`. Sele
 
 ## Features
 
-* Record images in jpeg format into a custom folder
+* Record images in jpeg format into a custom folder (currently in the main phone directory under `dataset_recorder`)
 * Records IMU data at the same time the images are recorded
 * Custom selection of what camera to use
 * Select what rate of IMU to use
