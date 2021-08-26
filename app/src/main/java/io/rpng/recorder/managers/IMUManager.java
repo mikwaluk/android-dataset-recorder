@@ -12,11 +12,8 @@ import android.preference.PreferenceManager;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.Date;
 
 import io.rpng.recorder.activities.MainActivity;
 
@@ -39,7 +36,8 @@ public class IMUManager implements SensorEventListener {
     long angular_time;
     int angular_acc;
     float[] angular_data;
-    private final String mFirstLine = "timestamp,ax,ay,az,gx,gy,gz";
+    private boolean mWriteHeaderLine = true;
+    private final String mHeaderLine = "timestamp,ax,ay,az,gx,gy,gz";
 
     public IMUManager(Activity activity) {
         // Set activity
@@ -107,14 +105,16 @@ public class IMUManager implements SensorEventListener {
                     // If the file does not exist yet, create it
                     if(!dest.exists()) {
                         dest.createNewFile();
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
-                        writer.write(mFirstLine + "\n");
-                        writer.flush();
-                        writer.close();
                     }
 
                     // The true will append the new data
                     BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
+
+                    if (mWriteHeaderLine) {
+                        writer.write(mHeaderLine + "\n");
+                        writer.flush();
+                        mWriteHeaderLine = false;
+                    }
 
                     // Master string of information
                     String data = linear_time
@@ -136,6 +136,10 @@ public class IMUManager implements SensorEventListener {
             linear_time = 0;
             angular_time = 0;
         }
+    }
+
+    public void prepareNewRecording() {
+        mWriteHeaderLine = true;
     }
 
     /**

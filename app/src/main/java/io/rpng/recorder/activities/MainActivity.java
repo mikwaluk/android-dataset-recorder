@@ -131,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
                     Button button_record = (Button) findViewById(R.id.button_record);
                     button_record.setText("Stop Recording");
 
+                    // Tell the managers to also write the header line to the csv file
+                    mImuManager.prepareNewRecording();
+                    mGpsManager.prepareNewRecording();
+
                     // Trigger the recording by changing the recording boolean
                     is_recording = true;
                 }

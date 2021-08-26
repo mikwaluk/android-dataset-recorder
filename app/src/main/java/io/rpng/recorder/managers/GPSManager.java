@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,9 +12,7 @@ import android.os.HandlerThread;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -56,8 +53,8 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
-    private boolean mWriteFirstLine = true;
-    private final String mFirstLine = "timestamp,latitude,longitude,altitude,accuracy,bearing,speed,provider";
+    private boolean mWriteHeaderLine = true;
+    private final String mHeaderLine = "timestamp,latitude,longitude,altitude,accuracy,bearing,speed,provider";
     public GPSManager(Activity activity) {
         // Set activity
         this.activity = activity;
@@ -103,14 +100,16 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
                 // If the file does not exist yet, create it
                 if (!dest.exists()) {
                     dest.createNewFile();
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
-                    writer.write(mFirstLine + "\n");
-                    writer.flush();
-                    writer.close();
                 }
 
                 // The true will append the new data
                 BufferedWriter writer = new BufferedWriter(new FileWriter(dest, true));
+                if (mWriteHeaderLine) {
+                    writer.write(mHeaderLine + "\n");
+                    writer.flush();
+                    mWriteHeaderLine = false;
+                }
+
                 // Master string of information
                 // TODO: See if we can use location.getTime()
                 String data = new Date().getTime() + "," + lat + "," + lon + "," + altitude + "," + accuracy
@@ -221,6 +220,10 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         }
     }
 
+    public void prepareNewRecording() {
+        mWriteHeaderLine = true;
+    }
+
     /**
      * Starts a background thread and its {@link Handler}.
      */
@@ -228,7 +231,6 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         mBackgroundThread = new HandlerThread("GPSBackground");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        mWriteFirstLine = true;
     }
 
     /**
