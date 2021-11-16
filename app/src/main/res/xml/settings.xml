@@ -58,12 +58,28 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Finished" >
+    <PreferenceCategory android:title="Choose sensors">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="record_camera"
+            android:title="Record camera" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="record_imu"
+            android:title="Record IMU" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="record_gps"
+            android:title="Record GPS" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Finished">
 
         <Preference
             android:key="exitlink"
-            android:title="Click Here to Exit"
-            android:summary="Start the recorder" />
+            android:summary="Start the recorder"
+            android:title="Click Here to Exit" />
 
     </PreferenceCategory>
 

@@ -90,7 +90,7 @@ public class IMUManager implements SensorEventListener {
         if(linear_time != 0 && angular_time != 0) {
 
             // Write the data to file if we are recording
-            if(MainActivity.is_recording) {
+            if(MainActivity.is_recording && MainActivity.record_imu) {
 
                 // Create folder name
                 String filename = "imu.csv";

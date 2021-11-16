@@ -1,5 +1,6 @@
 package io.rpng.recorder.activities;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static ImageView camera2View;
     private AutoFitTextureView mTextureView;
+    public static Activity myActivity;
 
     public static CameraManager mCameraManager;
     public static IMUManager mImuManager;
@@ -68,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
     public static String folder_name;
     public static long starting_offset = -1;
     private PowerManager.WakeLock mWakeLock;
+
+    public static boolean record_camera = true;
+    public static boolean record_gps = true;
+    public static boolean record_imu = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         // Get our surfaces
         camera2View = (ImageView) findViewById(R.id.camera2_preview);
         mTextureView = (AutoFitTextureView) findViewById(R.id.camera2_texture);
+        myActivity = this;
 
         // Create the camera manager
         mCameraManager = new CameraManager(this, mTextureView, camera2View);
@@ -130,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
                     // Also change the text on the button so that it turns into the stop button
                     Button button_record = (Button) findViewById(R.id.button_record);
                     button_record.setText("Stop Recording");
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(myActivity);
+                    record_camera = sharedPreferences.getBoolean("record_camera", true);
+                    record_imu = sharedPreferences.getBoolean("record_imu", true);
+                    record_gps = sharedPreferences.getBoolean("record_gps", true);
 
                     // Tell the managers to also write the header line to the csv file
                     mImuManager.prepareNewRecording();
@@ -204,7 +216,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onImageAvailable(ImageReader ir) {
-
+            if(!MainActivity.record_camera){
+                return;
+            }
             // Contrary to what is written in Aptina presentation acquireLatestImage is not working as described
             // Google: Also, not working as described in android docs (should work the same as acquireNextImage in
             // our case, but it is not)

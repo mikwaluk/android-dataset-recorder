@@ -85,7 +85,7 @@ public class GPSManager implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         //System.err.println(location.getTime() + "," + lat + "," + lon + "," + altitude + "," + accuracy);
 
         // Write the data to file if we are recording
-        if (MainActivity.is_recording) {
+        if (MainActivity.is_recording && MainActivity.record_gps) {
 
             // Create folder name
             String filename = "data_gps.txt";
