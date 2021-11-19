@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,6 +27,7 @@ public class IMUManager implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mAccel;
     private Sensor mGyro;
+    private Sensor mGyroUncalibrated;
 
     // Data storage (linear)
     long linear_time;
@@ -34,10 +36,12 @@ public class IMUManager implements SensorEventListener {
 
     // Data storage (angular)
     long angular_time;
+    long angular_uncalibrated_time;
     int angular_acc;
     float[] angular_data;
+    float[] angular_uncalibrated_data;
     private boolean mWriteHeaderLine = true;
-    private final String mHeaderLine = "timestamp,ax,ay,az,gx,gy,gz";
+    private final String mHeaderLine = "timestamp,ax,ay,az,gx,gy,gz,gx_uncal,gy_uncal,gz_uncal,gbx,gby,gbz";
 
     public IMUManager(Activity activity) {
         // Set activity
@@ -46,6 +50,7 @@ public class IMUManager implements SensorEventListener {
         mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
         mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mGyro = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        mGyroUncalibrated = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
     }
 
     @Override
@@ -85,9 +90,13 @@ public class IMUManager implements SensorEventListener {
             angular_time = event.timestamp;
             angular_data = event.values;
         }
+        else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE_UNCALIBRATED) {
+            angular_uncalibrated_time = event.timestamp;
+            angular_uncalibrated_data = event.values;
+        }
 
         // If the timestamps are not zeros, then we know we have two measurements
-        if(linear_time != 0 && angular_time != 0) {
+        if(linear_time != 0 && angular_time != 0 && angular_uncalibrated_time != 0) {
 
             // Write the data to file if we are recording
             if(MainActivity.is_recording && MainActivity.record_imu) {
@@ -119,7 +128,9 @@ public class IMUManager implements SensorEventListener {
                     // Master string of information
                     String data = linear_time
                             + "," + linear_data[0] + "," + linear_data[1] + "," + linear_data[2]
-                            + "," + angular_data[0] + "," + angular_data[1] + "," + angular_data[2];
+                            + "," + angular_data[0] + "," + angular_data[1] + "," + angular_data[2]
+                            + "," + angular_uncalibrated_data[0] + "," + angular_uncalibrated_data[1] + "," + angular_uncalibrated_data[2]
+                            + "," + angular_uncalibrated_data[3] + "," + angular_uncalibrated_data[4] + "," + angular_uncalibrated_data[5];
 
                     // Appends the string to the file and closes
                     writer.write(data + "\n");
@@ -150,8 +161,10 @@ public class IMUManager implements SensorEventListener {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
         String imuFreq = sharedPreferences.getString("perfImuFreq", "1");
         // Register the IMUs
+        Log.i("IMUManager", "register: IMU latency=" + imuFreq);
         mSensorManager.registerListener(this, mAccel, Integer.parseInt(imuFreq));
         mSensorManager.registerListener(this, mGyro, Integer.parseInt(imuFreq));
+        mSensorManager.registerListener(this, mGyroUncalibrated, Integer.parseInt(imuFreq));
     }
 
     /**
