@@ -159,7 +159,7 @@ public class IMUManager implements SensorEventListener {
     public void register() {
         // Get the freq we should get messages at (default is SensorManager.SENSOR_DELAY_GAME)
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-        String imuFreq = sharedPreferences.getString("perfImuFreq", "1");
+        String imuFreq = "10000";  //sharedPreferences.getString("perfImuFreq", "1");
         // Register the IMUs
         Log.i("IMUManager", "register: IMU latency=" + imuFreq);
         mSensorManager.registerListener(this, mAccel, Integer.parseInt(imuFreq));
