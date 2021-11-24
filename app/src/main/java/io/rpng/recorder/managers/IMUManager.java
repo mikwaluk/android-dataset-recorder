@@ -26,6 +26,7 @@ public class IMUManager implements SensorEventListener {
     // Sensor listeners
     private SensorManager mSensorManager;
     private Sensor mAccel;
+    private Sensor mAccelUncalirated;
     private Sensor mGyro;
     private Sensor mGyroUncalibrated;
 
@@ -33,15 +34,19 @@ public class IMUManager implements SensorEventListener {
     long linear_time;
     int linear_acc;
     float[] linear_data;
+    float[] linear_uncalibrated_data;
+    float[] gravity = {0,0,0};
+    float[] gravity_uncalibrated = {0,0,0};;
 
     // Data storage (angular)
     long angular_time;
     long angular_uncalibrated_time;
+    long linear_uncalibrated_time;
     int angular_acc;
     float[] angular_data;
     float[] angular_uncalibrated_data;
     private boolean mWriteHeaderLine = true;
-    private final String mHeaderLine = "timestamp,ax,ay,az,gx,gy,gz,gx_uncal,gy_uncal,gz_uncal,gbx,gby,gbz";
+    private final String mHeaderLine = "timestamp,ax,ay,az,ax_uncal,ay_uncal,az_uncal,bax,bay,baz,gx,gy,gz,gx_uncal,gy_uncal,gz_uncal,bgx,bgy,bgz";
 
     public IMUManager(Activity activity) {
         // Set activity
@@ -49,6 +54,7 @@ public class IMUManager implements SensorEventListener {
         // Create the sensor objects
         mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
         mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelUncalirated = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER_UNCALIBRATED);
         mGyro = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mGyroUncalibrated = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
     }
@@ -84,6 +90,15 @@ public class IMUManager implements SensorEventListener {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             linear_time = event.timestamp;
             linear_data = event.values;
+            // low pass filter to eliminate gravity
+            final float alpha = 0.95f;
+            gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
+            gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
+            gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
+
+            linear_data[0] = event.values[0] - gravity[0];
+            linear_data[1] = event.values[1] - gravity[1];
+            linear_data[2] = event.values[2] - gravity[2];
         }
         // Handle a gyro reading
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
@@ -94,9 +109,22 @@ public class IMUManager implements SensorEventListener {
             angular_uncalibrated_time = event.timestamp;
             angular_uncalibrated_data = event.values;
         }
+        else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER_UNCALIBRATED) {
+            linear_uncalibrated_time = event.timestamp;
+            linear_uncalibrated_data = event.values;
+            final float alpha = 0.95f;
+
+            gravity_uncalibrated[0] = alpha * gravity_uncalibrated[0] + (1 - alpha) * event.values[0];
+            gravity_uncalibrated[1] = alpha * gravity_uncalibrated[1] + (1 - alpha) * event.values[1];
+            gravity_uncalibrated[2] = alpha * gravity_uncalibrated[2] + (1 - alpha) * event.values[2];
+
+            linear_uncalibrated_data[0] = event.values[0] - gravity_uncalibrated[0];
+            linear_uncalibrated_data[1] = event.values[1] - gravity_uncalibrated[1];
+            linear_uncalibrated_data[2] = event.values[2] - gravity_uncalibrated[2];
+        }
 
         // If the timestamps are not zeros, then we know we have two measurements
-        if(linear_time != 0 && angular_time != 0 && angular_uncalibrated_time != 0) {
+        if(linear_time != 0 && angular_time != 0 && angular_uncalibrated_time != 0 && linear_uncalibrated_time != 0) {
 
             // Write the data to file if we are recording
             if(MainActivity.is_recording && MainActivity.record_imu) {
@@ -128,6 +156,8 @@ public class IMUManager implements SensorEventListener {
                     // Master string of information
                     String data = linear_time
                             + "," + linear_data[0] + "," + linear_data[1] + "," + linear_data[2]
+                            + "," + linear_uncalibrated_data[0] + "," + linear_uncalibrated_data[1] + "," + linear_uncalibrated_data[2]
+                            + "," + linear_uncalibrated_data[3] + "," + linear_uncalibrated_data[4] + "," + linear_uncalibrated_data[5]
                             + "," + angular_data[0] + "," + angular_data[1] + "," + angular_data[2]
                             + "," + angular_uncalibrated_data[0] + "," + angular_uncalibrated_data[1] + "," + angular_uncalibrated_data[2]
                             + "," + angular_uncalibrated_data[3] + "," + angular_uncalibrated_data[4] + "," + angular_uncalibrated_data[5];
@@ -165,6 +195,7 @@ public class IMUManager implements SensorEventListener {
         mSensorManager.registerListener(this, mAccel, Integer.parseInt(imuFreq));
         mSensorManager.registerListener(this, mGyro, Integer.parseInt(imuFreq));
         mSensorManager.registerListener(this, mGyroUncalibrated, Integer.parseInt(imuFreq));
+        mSensorManager.registerListener(this, mAccelUncalirated, Integer.parseInt(imuFreq));
     }
 
     /**
